@@ -7,5 +7,12 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') }
+  },
+  build: {
+    chunkSizeWarningLimit: 1200,
+  },
+  server: {
+    port: 5173,
+    open: true,
   }
 })

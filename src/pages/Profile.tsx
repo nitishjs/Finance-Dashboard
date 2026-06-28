@@ -37,54 +37,85 @@ type FormData = z.infer<typeof schema>
 export default function ProfilePage() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [passwordModal, setPasswordModal] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm<FormData>({
+  const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema) as any,
-    defaultValues: { currency: '₹', timezone: 'Asia/Kolkata', monthly_income: 0 },
+    defaultValues: {
+      full_name: '',
+      currency: '₹',
+      timezone: 'Asia/Kolkata',
+      monthly_income: 0,
+      financial_goal: '',
+      country: 'India',
+    },
   })
 
   useEffect(() => {
     if (!user) return
     profileService.get(user.id).then(p => {
-      setProfile(p)
       if (p) {
         reset({
-          full_name: p.full_name,
-          currency: p.currency,
-          monthly_income: Number(p.monthly_income),
-          financial_goal: p.financial_goal ?? '',
-          country: p.country ?? '',
-          timezone: p.timezone,
+          full_name: p.full_name || '',
+          currency: p.currency || '₹',
+          monthly_income: Number(p.monthly_income) || 0,
+          financial_goal: p.financial_goal || '',
+          country: p.country || 'India',
+          timezone: p.timezone || 'Asia/Kolkata',
+        })
+      } else {
+        // Profile not yet created (edge case) — pre-fill from auth metadata
+        const meta = user.user_metadata
+        reset({
+          full_name: meta?.full_name || '',
+          currency: '₹',
+          monthly_income: 0,
+          financial_goal: '',
+          country: 'India',
+          timezone: 'Asia/Kolkata',
         })
       }
       setLoading(false)
     })
-  }, [user])
+  }, [user, reset])
 
   const onSubmit = async (data: FormData) => {
     if (!user) return
-    const { error } = await profileService.upsert({ ...data, user_id: user.id })
-    if (error) { toast({ type: 'error', title: 'Failed to save profile', description: error.message }); return }
+    setSaving(true)
+    const { error } = await profileService.upsert({
+      user_id: user.id,
+      ...data,
+      monthly_income: Number(data.monthly_income),
+    })
+    setSaving(false)
+    if (error) {
+      toast({ type: 'error', title: 'Failed to save profile', description: error.message })
+      return
+    }
     toast({ type: 'success', title: 'Profile updated!' })
+    reset(data) // reset dirty state
   }
 
-  const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-    || user?.email?.slice(0, 2).toUpperCase() || 'U'
+  const initials = user?.user_metadata?.full_name
+    ?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+    || user?.email?.slice(0, 2).toUpperCase()
+    || 'U'
 
   return (
     <AppShell title="Settings" subtitle="Manage your profile and preferences">
       <div className="max-w-2xl space-y-6">
-        {/* Avatar section */}
+
+        {/* Avatar + identity */}
         <Card className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-xl font-medium text-[#D4AF37]">
+          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/7">
+            <div className="w-16 h-16 rounded-2xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-xl font-medium text-[#D4AF37] flex-shrink-0">
               {initials}
             </div>
             <div>
-              <p className="font-medium">{profile?.full_name || user?.email?.split('@')[0]}</p>
+              <p className="font-medium text-[#F0EDE8]">
+                {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+              </p>
               <p className="text-sm text-[#888580]">{user?.email}</p>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 mt-1 inline-block">
                 Pro Plan
@@ -94,7 +125,9 @@ export default function ProfilePage() {
 
           {loading ? (
             <div className="space-y-3 animate-pulse">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-10 bg-[#1C1C1C] rounded-xl" />)}
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-10 bg-[#1C1C1C] rounded-xl" />
+              ))}
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
@@ -140,8 +173,13 @@ export default function ProfilePage() {
                   {...register('financial_goal')}
                 />
               </div>
-              <div className="pt-2 flex gap-2">
-                <Button type="submit" variant="primary" loading={isSubmitting} disabled={!isDirty}>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={saving}
+                  disabled={!isDirty || saving}
+                >
                   Save changes
                 </Button>
                 <Button type="button" variant="ghost" onClick={() => reset()}>
@@ -152,28 +190,42 @@ export default function ProfilePage() {
           )}
         </Card>
 
-        {/* Account section */}
+        {/* Account */}
         <Card className="p-6">
           <p className="text-sm font-medium mb-4">Account</p>
-          <div className="space-y-3">
+          <div className="space-y-1">
             <div className="flex items-center justify-between py-3 border-b border-white/7">
               <div>
                 <p className="text-sm">Email address</p>
                 <p className="text-xs text-[#888580]">{user?.email}</p>
               </div>
-              <span className="text-xs text-[#555250] bg-[#1C1C1C] px-3 py-1 rounded-lg">Verified</span>
+              <span className="text-xs text-[#3DAA7A] bg-[#3DAA7A]/10 px-3 py-1 rounded-lg border border-[#3DAA7A]/20">
+                {user?.email_confirmed_at ? 'Verified' : 'Unverified'}
+              </span>
             </div>
             <div className="flex items-center justify-between py-3 border-b border-white/7">
               <div>
                 <p className="text-sm">Password</p>
-                <p className="text-xs text-[#888580]">Last changed: unknown</p>
+                <p className="text-xs text-[#888580]">Use forgot password to reset</p>
               </div>
-              <Button size="sm" variant="secondary" onClick={() => setPasswordModal(true)}>Change</Button>
+              <Button size="sm" variant="secondary" onClick={async () => {
+                if (!user?.email) return
+                await supabase.auth.resetPasswordForEmail(user.email, {
+                  redirectTo: `${window.location.origin}/reset-password`,
+                })
+                alert('Password reset link sent to your email.')
+              }}>
+                Reset
+              </Button>
             </div>
             <div className="flex items-center justify-between py-3">
               <div>
-                <p className="text-sm">Plan</p>
-                <p className="text-xs text-[#888580]">FINGold Pro — all features included</p>
+                <p className="text-sm">Member since</p>
+                <p className="text-xs text-[#888580]">
+                  {user?.created_at
+                    ? new Date(user.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+                    : '—'}
+                </p>
               </div>
               <span className="text-xs text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-lg border border-[#D4AF37]/20">Pro</span>
             </div>
@@ -188,12 +240,20 @@ export default function ProfilePage() {
               <p className="text-sm">Delete account</p>
               <p className="text-xs text-[#888580]">Permanently delete your account and all data. Cannot be undone.</p>
             </div>
-            <Button size="sm" variant="danger" onClick={() => alert('Please contact support to delete your account.')}>
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => alert('To delete your account, please contact support@fingold.app')}
+            >
               Delete account
             </Button>
           </div>
         </Card>
+
       </div>
     </AppShell>
   )
 }
+
+// Inline supabase import needed for reset button
+import { supabase } from '../supabase/client'
