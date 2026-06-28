@@ -26,39 +26,43 @@ export default function AIPage() {
   const [loading, setLoading] = useState(false)
   const [contextLoading, setContextLoading] = useState(true)
   const [financialContext, setFinancialContext] = useState('')
+  const [apiStatus, setApiStatus] = useState<'ok' | 'no-key' | 'error' | 'checking'>('checking')
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Load financial context once
   useEffect(() => {
     if (!user) return
     const month = currentMonth()
     Promise.all([
       incomeService.listByMonth(user.id, month),
       expenseService.listByMonth(user.id, month),
+      // Also get all-time for richer context
+      incomeService.list(user.id),
+      expenseService.list(user.id),
       goalService.list(user.id),
-    ]).then(([inc, exp, goals]) => {
-      const incomes = inc.data ?? []
-      const expenses = exp.data ?? []
+    ]).then(([monthInc, monthExp, allInc, allExp, goals]) => {
+      const incomes = monthInc.data ?? []
+      const expenses = monthExp.data ?? []
+      const allIncomes = allInc.data ?? []
+      const allExpenses = allExp.data ?? []
       const goalList = goals.data ?? []
 
       const totalIncome = incomes.reduce((s, i) => s + Number(i.amount), 0)
       const totalExp = expenses.reduce((s, e) => s + Number(e.amount), 0)
+      const allTimeIncome = allIncomes.reduce((s, i) => s + Number(i.amount), 0)
+      const allTimeExp = allExpenses.reduce((s, e) => s + Number(e.amount), 0)
       const savingsRate = totalIncome > 0 ? ((totalIncome - totalExp) / totalIncome * 100).toFixed(1) : '0'
 
       const catMap: Record<string, number> = {}
-      expenses.forEach(e => { catMap[e.category] = (catMap[e.category] ?? 0) + Number(e.amount) })
-      const topCategories = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 5)
+      allExpenses.forEach(e => { catMap[e.category] = (catMap[e.category] ?? 0) + Number(e.amount) })
+      const topCategories = Object.entries(catMap)
+        .sort((a, b) => b[1] - a[1]).slice(0, 5)
         .map(([cat, amt]) => `${cat}: ${formatCurrency(amt)}`).join(', ')
 
-      const ctx = `
-User's Financial Context (${month}):
-- Monthly Income: ${formatCurrency(totalIncome)}
-- Monthly Expenses: ${formatCurrency(totalExp)}
-- Net Savings This Month: ${formatCurrency(totalIncome - totalExp)}
-- Savings Rate: ${savingsRate}%
-- Top Expense Categories: ${topCategories || 'No expenses yet'}
-- Active Financial Goals: ${goalList.map(g => `${g.name} (${Math.round((Number(g.current_saved) / Number(g.target_amount)) * 100)}% complete, target: ${formatCurrency(Number(g.target_amount))})`).join('; ') || 'None set'}
-      `.trim()
+      const ctx = `User Financial Context (${month}):
+- This month income: ${formatCurrency(totalIncome)} | expenses: ${formatCurrency(totalExp)} | savings rate: ${savingsRate}%
+- All-time income: ${formatCurrency(allTimeIncome)} | all-time expenses: ${formatCurrency(allTimeExp)}
+- Top expense categories (all time): ${topCategories || 'No expenses yet'}
+- Goals: ${goalList.map(g => `${g.name} (${Math.round((Number(g.current_saved) / Number(g.target_amount)) * 100)}% of ${formatCurrency(Number(g.target_amount))} target)`).join('; ') || 'None set'}`
 
       setFinancialContext(ctx)
       setContextLoading(false)
@@ -76,38 +80,58 @@ User's Financial Context (${month}):
     setInput('')
     setLoading(true)
 
-    try {
-      const systemPrompt = `You are FINGold AI, a knowledgeable and empathetic personal finance advisor. You help users manage their money, budget wisely, save more, and achieve their financial goals.
+    const systemPrompt = `You are FINGold AI, a knowledgeable and empathetic personal finance advisor for Indian users. You help users manage money, budget wisely, save more, and achieve financial goals.
 
 ${financialContext}
 
 Guidelines:
-- Be concise, actionable, and encouraging
-- Use Indian financial context (₹, Indian banks, MF/SIP, etc.)
-- Refer to the user's actual data when relevant
-- Give specific, numbered recommendations when asked
-- Keep responses under 300 words unless the question needs more detail
-- Format with clear headings and bullet points when helpful`
+- Be concise, warm, and actionable
+- Use Indian financial context (₹, SIP, mutual funds, PPF, NPS, etc.)
+- Reference the user's actual data when answering
+- Give specific numbered recommendations
+- Keep responses under 300 words unless detail is needed
+- Use bullet points and bold headings for clarity`
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+    try {
+      // Call our Vercel serverless proxy — avoids CORS and keeps API key server-side
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
           system: systemPrompt,
           messages: [
             ...messages.map(m => ({ role: m.role, content: m.content })),
             { role: 'user', content: text },
           ],
+          max_tokens: 1000,
         }),
       })
 
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        if (response.status === 500 && err.error?.includes('ANTHROPIC_API_KEY')) {
+          setApiStatus('no-key')
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: '⚙️ **Setup needed:** The ANTHROPIC_API_KEY environment variable is not set on Vercel. See the setup instructions on the right panel to enable the AI assistant.'
+          }])
+        } else {
+          throw new Error(err.error || 'API error')
+        }
+        setLoading(false)
+        return
+      }
+
+      setApiStatus('ok')
       const data = await response.json()
       const reply = data.content?.[0]?.text ?? 'Sorry, I could not generate a response. Please try again.'
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error. Please check your internet and try again.' }])
+    } catch (err) {
+      console.error('AI chat error:', err)
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: '❌ Could not reach the AI service. Please check your internet connection and try again.'
+      }])
     } finally {
       setLoading(false)
     }
@@ -119,10 +143,10 @@ Guidelines:
 
   return (
     <AppShell title="AI Finance Assistant" subtitle="Powered by Claude AI">
-      <div className="grid grid-cols-[1fr_280px] gap-4 h-[calc(100vh-140px)]">
+      <div className="grid grid-cols-[1fr_300px] gap-4 h-[calc(100vh-140px)]">
+
         {/* Chat Panel */}
         <Card className="flex flex-col overflow-hidden">
-          {/* Chat messages */}
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center py-8">
@@ -130,7 +154,7 @@ Guidelines:
                 <h3 className="text-base font-medium mb-2">Your AI Finance Advisor</h3>
                 <p className="text-sm text-[#888580] max-w-sm mb-6">
                   Ask me anything about budgeting, saving, investing, or your personal finance data.
-                  {contextLoading ? ' Loading your financial context…' : ' I can see your current financial data.'}
+                  {contextLoading ? ' Loading your financial context…' : ' I have your current financial data.'}
                 </p>
                 <div className="grid grid-cols-2 gap-2 w-full max-w-sm">
                   {QUICK_PROMPTS.slice(0, 4).map(p => (
@@ -138,7 +162,7 @@ Guidelines:
                       key={p.label}
                       onClick={() => sendMessage(p.prompt)}
                       disabled={contextLoading}
-                      className="text-left p-3 rounded-xl border border-white/7 hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/5 transition-all disabled:opacity-50"
+                      className="text-left p-3 rounded-xl border border-white/10 hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/5 transition-all disabled:opacity-50"
                     >
                       <div className="text-lg mb-1">{p.icon}</div>
                       <p className="text-xs font-medium">{p.label}</p>
@@ -155,13 +179,11 @@ Guidelines:
                     🤖
                   </div>
                 )}
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                    msg.role === 'user'
-                      ? 'bg-[#D4AF37]/15 border border-[#D4AF37]/20 text-[#F0EDE8] rounded-tr-md'
-                      : 'bg-[#1C1C1C] border border-white/7 text-[#F0EDE8] rounded-tl-md'
-                  }`}
-                >
+                <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+                  msg.role === 'user'
+                    ? 'bg-[#D4AF37]/15 border border-[#D4AF37]/20 text-[#F0EDE8] rounded-tr-md'
+                    : 'bg-[#1C1C1C] border border-white/7 text-[#F0EDE8] rounded-tl-md'
+                }`}>
                   {msg.content}
                 </div>
               </div>
@@ -181,7 +203,7 @@ Guidelines:
             <div ref={bottomRef} />
           </div>
 
-          {/* Input area */}
+          {/* Input */}
           <div className="border-t border-white/7 p-4">
             <div className="flex items-end gap-2">
               <textarea
@@ -195,23 +217,22 @@ Guidelines:
               />
               <Button
                 variant="primary"
-                size="sm"
                 onClick={() => sendMessage(input)}
                 disabled={!input.trim() || loading || contextLoading}
-                className="flex-shrink-0 h-[72px] w-12 rounded-xl"
+                className="flex-shrink-0 h-[72px] w-12 rounded-xl text-lg"
               >
                 ↑
               </Button>
             </div>
-            <p className="text-[10px] text-[#555250] mt-2">Press Enter to send · Shift+Enter for newline</p>
+            <p className="text-[10px] text-[#555250] mt-2">Enter to send · Shift+Enter for new line</p>
           </div>
         </Card>
 
-        {/* Sidebar: quick prompts + info */}
-        <div className="flex flex-col gap-4">
+        {/* Right sidebar */}
+        <div className="flex flex-col gap-4 overflow-y-auto">
           <Card className="p-4">
             <p className="text-xs font-medium text-[#888580] uppercase tracking-wide mb-3">Quick Prompts</p>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {QUICK_PROMPTS.map(p => (
                 <button
                   key={p.label}
@@ -219,8 +240,8 @@ Guidelines:
                   disabled={loading || contextLoading}
                   className="w-full text-left flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-[#1C1C1C] transition-colors disabled:opacity-50 group"
                 >
-                  <span className="text-base">{p.icon}</span>
-                  <span className="text-xs group-hover:text-[#F0EDE8] text-[#888580]">{p.label}</span>
+                  <span className="text-base flex-shrink-0">{p.icon}</span>
+                  <span className="text-xs text-[#888580] group-hover:text-[#F0EDE8]">{p.label}</span>
                 </button>
               ))}
             </div>
@@ -229,15 +250,25 @@ Guidelines:
           <Card className="p-4">
             <p className="text-xs font-medium text-[#888580] uppercase tracking-wide mb-3">Data Context</p>
             {contextLoading ? (
-              <div className="flex items-center gap-2 text-xs text-[#888580]">
-                <Spinner size={12} /> Loading…
-              </div>
+              <div className="flex items-center gap-2 text-xs text-[#888580]"><Spinner size={12} /> Loading…</div>
             ) : (
               <p className="text-xs text-[#3DAA7A]">✓ Financial data loaded</p>
             )}
-            <p className="text-[10px] text-[#555250] mt-2 leading-relaxed">
-              The AI has access to your current month's income, expenses, and goals to give personalised advice.
-            </p>
+          </Card>
+
+          {/* API Key setup instructions */}
+          <Card className="p-4 border-[#D4AF37]/20">
+            <p className="text-xs font-medium text-[#D4AF37] uppercase tracking-wide mb-3">⚙ AI Setup</p>
+            <div className="space-y-2 text-xs text-[#888580] leading-relaxed">
+              <p>To enable the AI assistant, add your Anthropic API key to Vercel:</p>
+              <ol className="space-y-2 list-none">
+                <li className="flex gap-2"><span className="text-[#D4AF37] flex-shrink-0">1.</span><span>Go to <span className="text-[#D4AF37]">vercel.com</span> → your project → <strong className="text-[#F0EDE8]">Settings</strong></span></li>
+                <li className="flex gap-2"><span className="text-[#D4AF37] flex-shrink-0">2.</span><span>Click <strong className="text-[#F0EDE8]">Environment Variables</strong></span></li>
+                <li className="flex gap-2"><span className="text-[#D4AF37] flex-shrink-0">3.</span><span>Add key: <code className="bg-[#1C1C1C] px-1 rounded text-[#F0EDE8]">ANTHROPIC_API_KEY</code></span></li>
+                <li className="flex gap-2"><span className="text-[#D4AF37] flex-shrink-0">4.</span><span>Value: your key from <span className="text-[#D4AF37]">console.anthropic.com</span></span></li>
+                <li className="flex gap-2"><span className="text-[#D4AF37] flex-shrink-0">5.</span><span>Click <strong className="text-[#F0EDE8]">Redeploy</strong> in Deployments tab</span></li>
+              </ol>
+            </div>
           </Card>
 
           {messages.length > 0 && (
