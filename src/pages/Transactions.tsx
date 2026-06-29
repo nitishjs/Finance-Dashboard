@@ -152,15 +152,17 @@ export default function TransactionsPage() {
             <p className="text-xs text-[#888580]">Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}</p>
             <div className="flex gap-1">
               <Button size="sm" variant="ghost" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>←</Button>
-              {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                const p = i + 1
-                return (
+              {(() => {
+                const delta = 2
+                const start = Math.max(1, Math.min(page - delta, totalPages - delta * 2))
+                const end   = Math.min(totalPages, start + delta * 2)
+                return Array.from({ length: end - start + 1 }, (_, i) => start + i).map(p => (
                   <button key={p} onClick={() => setPage(p)}
                     className={`w-7 h-7 rounded-lg text-xs ${page === p ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'text-[#888580] hover:text-[#F0EDE8]'}`}>
                     {p}
                   </button>
-                )
-              })}
+                ))
+              })()}
               <Button size="sm" variant="ghost" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>→</Button>
             </div>
           </div>

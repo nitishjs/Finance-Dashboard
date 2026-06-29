@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AppShell } from '../components/layout/AppShell'
+import { supabase } from '../supabase/client'
 import { Card, Button, Input, Select } from '../components/ui'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../hooks/useToast'
@@ -254,6 +255,3 @@ export default function ProfilePage() {
     </AppShell>
   )
 }
-
-// Inline supabase import needed for reset button
-import { supabase } from '../supabase/client'

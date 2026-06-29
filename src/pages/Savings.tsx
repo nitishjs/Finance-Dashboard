@@ -112,7 +112,7 @@ export default function SavingsPage() {
               </defs>
               <XAxis dataKey="date" tick={{ fill: '#888580', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#888580', fontSize: 10 }} axisLine={false} tickLine={false}
-                tickFormatter={v => `₹${Math.round(v / 1000)}K`} />
+                tickFormatter={(v: number) => `₹${Math.round(v / 1000)}K`} />
               <Tooltip
                 contentStyle={{ background: '#151515', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}
                 formatter={(v: unknown) => [formatCurrency(v as number), 'Cumulative']}

@@ -122,7 +122,7 @@ export default function AnalyticsPage() {
                 <BarChart data={trendData} barGap={4}>
                   <XAxis dataKey="month" tick={{ fill: '#888580', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#888580', fontSize: 10 }} axisLine={false} tickLine={false}
-                    tickFormatter={v => `₹${Math.round(v / 1000)}K`} />
+                    tickFormatter={(v: number) => `₹${Math.round(v / 1000)}K`} />
                   <Tooltip {...tooltipStyle} formatter={(v: unknown) => formatCurrency(v as number)} />
                   <Legend wrapperStyle={{ fontSize: 11, color: '#888580' }} />
                   <Bar dataKey="income" name="Income" fill="#D4AF37" radius={[4, 4, 0, 0]} maxBarSize={24} />
@@ -139,7 +139,7 @@ export default function AnalyticsPage() {
                 <BarChart data={trendData}>
                   <XAxis dataKey="month" tick={{ fill: '#888580', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#888580', fontSize: 10 }} axisLine={false} tickLine={false}
-                    tickFormatter={v => `₹${Math.round(v / 1000)}K`} />
+                    tickFormatter={(v: number) => `₹${Math.round(v / 1000)}K`} />
                   <Tooltip {...tooltipStyle} formatter={(v: unknown) => formatCurrency(v as number)} />
                   <Bar dataKey="net" name="Net flow" radius={[4, 4, 0, 0]} maxBarSize={32}>
                     {trendData.map((entry, i) => (
@@ -237,7 +237,7 @@ export default function AnalyticsPage() {
                   </defs>
                   <XAxis dataKey="date" tick={{ fill: '#888580', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={getMonthLabel} />
                   <YAxis tick={{ fill: '#888580', fontSize: 10 }} axisLine={false} tickLine={false}
-                    tickFormatter={v => `₹${Math.round(v / 1000)}K`} />
+                    tickFormatter={(v: number) => `₹${Math.round(v / 1000)}K`} />
                   <Tooltip {...tooltipStyle} formatter={(v: unknown) => [formatCurrency(v as number), 'Total saved']} />
                   <Area dataKey="total" stroke="#D4AF37" strokeWidth={2} fill="url(#savGradA)" />
                 </AreaChart>
@@ -253,7 +253,7 @@ export default function AnalyticsPage() {
               <LineChart data={trendData}>
                 <XAxis dataKey="month" tick={{ fill: '#888580', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#888580', fontSize: 10 }} axisLine={false} tickLine={false}
-                  tickFormatter={v => `₹${Math.round(v / 1000)}K`} />
+                  tickFormatter={(v: number) => `₹${Math.round(v / 1000)}K`} />
                 <Tooltip {...tooltipStyle} formatter={(v: unknown) => formatCurrency(v as number)} />
                 <Legend wrapperStyle={{ fontSize: 11, color: '#888580' }} />
                 <Line dataKey="income" name="Income" stroke="#D4AF37" strokeWidth={2} dot={{ fill: '#D4AF37', r: 3 }} />
