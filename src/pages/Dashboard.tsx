@@ -140,12 +140,12 @@ export default function DashboardPage() {
       title="Dashboard"
       subtitle={label(selectedMonth)}
       action={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap justify-end">
           {/* Month picker */}
           <select
             value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
-            className="bg-[#111111] border border-white/10 rounded-xl px-3 py-2 text-xs text-[#F0EDE8] focus:outline-none focus:border-[#D4AF37]/50 cursor-pointer"
+            className="bg-[#111111] border border-white/10 rounded-xl px-2 py-1.5 md:px-3 md:py-2 text-xs text-[#F0EDE8] focus:outline-none focus:border-[#D4AF37]/50 cursor-pointer max-w-[110px] md:max-w-none"
           >
             {monthOptions.map(m => {
               const hasAny = allIncomes.some(i => ym(i.date) === m) || allExpenses.some(e => ym(e.date) === m)

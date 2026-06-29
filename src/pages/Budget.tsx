@@ -76,9 +76,9 @@ export default function BudgetPage() {
       title="Budget Planner"
       subtitle={`Managing budgets for ${month}`}
       action={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap justify-end">
           <input type="month" value={month} onChange={e => setMonth(e.target.value)}
-            className="bg-[#111111] border border-white/10 rounded-xl px-3 py-2 text-xs text-[#F0EDE8] focus:outline-none"/>
+            className="bg-[#111111] border border-white/10 rounded-xl px-2 py-1.5 text-xs text-[#F0EDE8] focus:outline-none w-28 md:w-auto"/>
           <Button variant="primary" size="sm" onClick={openAdd}>+ Add budget</Button>
         </div>
       }

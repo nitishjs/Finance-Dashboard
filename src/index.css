@@ -20,19 +20,85 @@
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
+/* ── Reset & Base ─────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
+
+html {
+  /* Prevent font size inflation on iOS */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 body {
   background: #0A0A0A;
   color: #F0EDE8;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /* Prevent horizontal overflow on mobile */
+  overflow-x: hidden;
 }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+/* ── Scrollbars (desktop only) ────────────────────────────────────── */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+}
 
+/* ── Mobile touch improvements ────────────────────────────────────── */
+/* Remove tap highlight flash on iOS */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Smooth momentum scrolling on iOS for scrollable containers */
+.overflow-y-auto, .overflow-x-auto, main {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection on buttons/nav items */
+button, a, nav {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* iOS safe area — bottom nav clears home indicator */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Card hover (desktop only — no hover flicker on touch) ────────── */
+@media (hover: hover) {
+  .card-hover { transition: border-color 0.2s, box-shadow 0.2s; }
+  .card-hover:hover {
+    border-color: rgba(212,175,55,0.3) !important;
+    box-shadow: 0 0 20px rgba(212,175,55,0.08);
+  }
+}
+
+/* ── Animations ───────────────────────────────────────────────────── */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.animate-slide-up  { animation: slideUp 0.28s cubic-bezier(0.32,0.72,0,1) both; }
+.animate-fade-in   { animation: fadeIn 0.2s ease both; }
+.animate-scale-in  { animation: scaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* ── Utility ──────────────────────────────────────────────────────── */
 .gold-glow { box-shadow: 0 0 20px rgba(212,175,55,0.15); }
-.card-hover { transition: border-color 0.2s, box-shadow 0.2s; }
-.card-hover:hover { border-color: rgba(212,175,55,0.3) !important; box-shadow: 0 0 20px rgba(212,175,55,0.08); }
+
+/* Horizontal scroll containers — hide scrollbar visually on mobile */
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-x::-webkit-scrollbar { display: none; }

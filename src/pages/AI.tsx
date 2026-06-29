@@ -47,10 +47,10 @@ export default function AIPage() {
 
   return (
     <AppShell title="AI Finance Assistant" subtitle="Powered by Claude AI">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-4 md:h-[calc(100vh-140px)]">
+      <div className="flex flex-col md:grid md:grid-cols-[1fr_280px] gap-3 md:gap-4 md:h-[calc(100vh-140px)]">
 
         {/* ── Chat Panel ─────────────────────────────────────────────── */}
-        <Card className="flex flex-col overflow-hidden">
+        <Card className="flex flex-col overflow-hidden min-h-[60vh] md:min-h-0">
 
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-5 space-y-4">

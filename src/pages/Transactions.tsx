@@ -75,15 +75,15 @@ export default function TransactionsPage() {
 
       <Card className="p-5">
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 mb-5">
-          <div className="flex-1 min-w-48">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 mb-4">
+          <div className="w-full sm:flex-1 sm:min-w-48">
             <Input
               placeholder="Search transactions…"
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
             />
           </div>
-          <div className="flex gap-1 bg-[#1C1C1C] rounded-xl p-1">
+          <div className="flex gap-1 bg-[#1C1C1C] rounded-xl p-1 w-full sm:w-auto">
             {(['all', 'income', 'expense'] as const).map(t => (
               <button key={t} onClick={() => { setFilterType(t); setPage(1) }}
                 className={`px-3 py-1.5 rounded-lg text-xs capitalize transition-colors ${filterType === t ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'text-[#888580] hover:text-[#F0EDE8]'}`}>
@@ -94,14 +94,14 @@ export default function TransactionsPage() {
           <select
             value={filterCategory}
             onChange={e => { setFilterCategory(e.target.value); setPage(1) }}
-            className="bg-[#111111] border border-white/10 rounded-xl px-3 py-2 text-xs text-[#F0EDE8] focus:outline-none focus:border-[#D4AF37]/50"
+            className="w-full sm:w-auto bg-[#111111] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-[#F0EDE8] focus:outline-none focus:border-[#D4AF37]/50"
           >
             {categories.map(c => <option key={c} value={c}>{c === 'all' ? 'All categories' : c}</option>)}
           </select>
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value as 'date' | 'amount')}
-            className="bg-[#111111] border border-white/10 rounded-xl px-3 py-2 text-xs text-[#F0EDE8] focus:outline-none focus:border-[#D4AF37]/50"
+            className="w-full sm:w-auto bg-[#111111] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-[#F0EDE8] focus:outline-none focus:border-[#D4AF37]/50"
           >
             <option value="date">Sort by date</option>
             <option value="amount">Sort by amount</option>

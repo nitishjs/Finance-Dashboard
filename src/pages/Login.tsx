@@ -119,8 +119,8 @@ export function AuthLayout({ children, title, subtitle }: {
       </div>
 
       {/* Right: form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-sm">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+        <div className="w-full max-w-sm px-1">
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-8 md:hidden">
             <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center">
