@@ -93,7 +93,7 @@ export default function AnalyticsPage() {
   return (
     <AppShell title="Analytics" subtitle="Deep-dive into your financial data">
       {/* Overview KPIs */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
         {[
           { label: 'Total Income', value: formatCurrency(totalIncome), color: '#3DAA7A' },
           { label: 'Total Expenses', value: formatCurrency(totalExpenses), color: '#C94F4F' },
@@ -108,13 +108,13 @@ export default function AnalyticsPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           {[...Array(4)].map((_, i) => <div key={i} className="h-64 bg-[#151515] rounded-2xl border border-white/7 animate-pulse" />)}
         </div>
       ) : (
         <>
           {/* Income vs Expenses */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
             <Card className="p-5">
               <p className="text-sm font-medium mb-1">Income vs Expenses</p>
               <p className="text-xs text-[#888580] mb-4">Last 6 months</p>
@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Expense Pie + Income Pie */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
             <Card className="p-5">
               <p className="text-sm font-medium mb-1">Expense Breakdown</p>
               <p className="text-xs text-[#888580] mb-4">All time by category</p>

@@ -140,7 +140,7 @@ export default function GoalsPage() {
       action={<Button variant="primary" size="sm" onClick={openAdd}>+ New goal</Button>}
     >
       {/* Summary */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
         <Card className="p-4">
           <p className="text-xs text-[#888580] mb-1">Total Targeted</p>
           <p className="text-xl font-medium">{formatCurrency(totalTargeted)}</p>
@@ -161,7 +161,7 @@ export default function GoalsPage() {
 
       {/* Goals grid */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-48 bg-[#151515] rounded-2xl border border-white/7 animate-pulse" />
           ))}
@@ -176,7 +176,7 @@ export default function GoalsPage() {
           />
         </Card>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           {goals.map(g => {
             const pct = Math.min(100, Math.round((Number(g.current_saved) / Number(g.target_amount)) * 100))
             const done = pct >= 100
@@ -287,7 +287,7 @@ export default function GoalsPage() {
             error={errors.name?.message}
             {...register('name')}
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Target amount (₹)"
               type="number"
@@ -305,7 +305,7 @@ export default function GoalsPage() {
               {...register('current_saved')}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Deadline"
               type="date"

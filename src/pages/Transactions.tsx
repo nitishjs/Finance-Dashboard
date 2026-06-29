@@ -56,7 +56,7 @@ export default function TransactionsPage() {
   return (
     <AppShell title="Transactions" subtitle="All your financial activity">
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
         <Card className="p-4">
           <p className="text-xs text-[#888580] mb-1">Total Income</p>
           <p className="text-xl font-medium text-[#3DAA7A]">{formatCurrency(totalIncome)}</p>
@@ -115,30 +115,22 @@ export default function TransactionsPage() {
           <p className="text-center text-sm text-[#555250] py-12">No transactions match your filters.</p>
         ) : (
           <div className="space-y-1">
-            {/* Header */}
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-3 py-2 text-[10px] text-[#555250] uppercase tracking-wide">
-              <span>Description</span><span>Category</span><span>Date</span><span>Method</span><span className="text-right">Amount</span>
-            </div>
             {paginated.map(tx => (
-              <div key={tx.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center px-3 py-3 rounded-xl hover:bg-[#1C1C1C] transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0"
-                    style={{ background: tx.type === 'income' ? 'rgba(61,170,122,0.15)' : 'rgba(201,79,79,0.1)' }}>
-                    {tx.type === 'income' ? '↑' : '↓'}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm truncate">{tx.name}</p>
-                    {tx.notes && <p className="text-[10px] text-[#555250] truncate">{tx.notes}</p>}
-                  </div>
+              <div key={tx.id} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-[#1C1C1C] transition-colors">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0"
+                  style={{ background: tx.type === 'income' ? 'rgba(61,170,122,0.15)' : 'rgba(201,79,79,0.1)' }}>
+                  {tx.type === 'income' ? '↑' : '↓'}
                 </div>
-                <div>
-                  <span className="text-xs px-2 py-1 rounded-lg" style={{ background: `${CATEGORY_COLORS[tx.category] ?? '#888580'}20`, color: CATEGORY_COLORS[tx.category] ?? '#888580' }}>
-                    {tx.category}
-                  </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm truncate">{tx.name}</p>
+                  <p className="text-[10px] text-[#555250]">
+                    <span style={{ color: CATEGORY_COLORS[tx.category] ?? '#888580' }}>{tx.category}</span>
+                    {' · '}{formatDate(tx.date)}
+                    {tx.payment_method && <span className="hidden sm:inline">{' · '}{tx.payment_method}</span>}
+                    {tx.notes && <span className="hidden sm:inline">{' · '}{tx.notes}</span>}
+                  </p>
                 </div>
-                <p className="text-xs text-[#888580]">{formatDate(tx.date)}</p>
-                <p className="text-xs text-[#888580]">{tx.payment_method ?? '—'}</p>
-                <p className={`text-sm font-medium text-right ${tx.type === 'income' ? 'text-[#3DAA7A]' : 'text-[#C94F4F]'}`}>
+                <p className={`text-sm font-medium flex-shrink-0 ${tx.type === 'income' ? 'text-[#3DAA7A]' : 'text-[#C94F4F]'}`}>
                   {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                 </p>
               </div>

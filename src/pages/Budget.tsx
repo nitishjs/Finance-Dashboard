@@ -84,7 +84,7 @@ export default function BudgetPage() {
       }
     >
       {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
         <Card className="p-4"><p className="text-xs text-[#888580] mb-1">Total Budget</p><p className="text-xl font-medium">{formatCurrency(totalBudget)}</p></Card>
         <Card className="p-4"><p className="text-xs text-[#888580] mb-1">Total Spent</p><p className={`text-xl font-medium ${totalSpent > totalBudget ? 'text-[#C94F4F]' : 'text-[#F0EDE8]'}`}>{formatCurrency(totalSpent)}</p></Card>
         <Card className="p-4"><p className="text-xs text-[#888580] mb-1">Remaining</p><p className={`text-xl font-medium ${totalBudget - totalSpent >= 0 ? 'text-[#3DAA7A]' : 'text-[#C94F4F]'}`}>{formatCurrency(totalBudget - totalSpent)}</p></Card>
@@ -117,7 +117,7 @@ export default function BudgetPage() {
           <EmptyState icon="💼" title="No budgets set" description={`Set category budgets for ${month} to track your spending.`} action={<Button variant="primary" onClick={openAdd}>Create first budget</Button>} />
         </Card>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           {enriched.map(b => (
             <Card key={b.id} className={`p-5 ${b.over ? 'border-[#C94F4F]/30' : ''}`}>
               <div className="flex items-start justify-between mb-3">

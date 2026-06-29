@@ -82,7 +82,7 @@ export default function SavingsPage() {
       action={<Button variant="primary" size="sm" onClick={() => setModalOpen(true)}>+ Record savings</Button>}
     >
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
         <Card className="p-4">
           <p className="text-xs text-[#888580] mb-1">Total Saved (All Time)</p>
           <p className="text-2xl font-medium text-[#D4AF37]">{formatCurrency(totalSaved)}</p>
@@ -139,22 +139,19 @@ export default function SavingsPage() {
           />
         ) : (
           <div>
-            <div className="grid grid-cols-[2fr_1fr_1fr_auto] gap-4 px-3 py-2 text-[10px] text-[#555250] uppercase tracking-wide mb-1">
-              <span>Note</span><span>Date</span><span className="text-right">Amount</span><span />
-            </div>
             {savings.map((s, idx) => (
-              <div key={s.id} className="grid grid-cols-[2fr_1fr_1fr_auto] gap-4 items-center px-3 py-3 rounded-xl hover:bg-[#1C1C1C] transition-colors group">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center text-sm text-[#D4AF37] flex-shrink-0">
-                    🐷
-                  </div>
-                  <p className="text-sm text-[#F0EDE8]">{s.note ?? `Savings entry #${savings.length - idx}`}</p>
+              <div key={s.id} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-[#1C1C1C] transition-colors group">
+                <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center text-sm text-[#D4AF37] flex-shrink-0">
+                  🐷
                 </div>
-                <span className="text-xs text-[#888580]">{formatDate(s.date)}</span>
-                <span className="text-sm font-medium text-[#D4AF37] text-right">+{formatCurrency(Number(s.amount))}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-[#F0EDE8] truncate">{s.note ?? `Savings entry #${savings.length - idx}`}</p>
+                  <p className="text-[10px] text-[#555250]">{formatDate(s.date)}</p>
+                </div>
+                <span className="text-sm font-medium text-[#D4AF37] flex-shrink-0">+{formatCurrency(Number(s.amount))}</span>
                 <button
                   onClick={() => handleDelete(s.id)}
-                  className="text-xs text-[#C94F4F] hover:bg-[#C94F4F]/10 px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="text-xs text-[#C94F4F] hover:bg-[#C94F4F]/10 px-2 py-1 rounded-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                 >
                   ×
                 </button>

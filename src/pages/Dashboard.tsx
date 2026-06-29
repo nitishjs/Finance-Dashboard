@@ -172,7 +172,7 @@ export default function DashboardPage() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
         <KpiCard
           label="Monthly Income"
           value={formatCurrency(totalIncome)}
@@ -202,8 +202,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
+        <div className="md:col-span-2">
           <Card className="p-5 h-full">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -249,7 +249,7 @@ export default function DashboardPage() {
               <span className="text-[10px] text-[#888580]">{health.label}</span>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
             <div className="text-center bg-[#1C1C1C] rounded-xl p-2">
               <p className="text-sm font-medium text-[#3DAA7A]">{savingsRate}%</p>
               <p className="text-[10px] text-[#888580]">Savings rate</p>
@@ -263,7 +263,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         {/* Recent Transactions */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
@@ -406,11 +406,11 @@ function Skeleton() {
       <div className="grid grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-[#151515] rounded-2xl border border-white/7"/>)}
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         <div className="col-span-2 h-64 bg-[#151515] rounded-2xl border border-white/7"/>
         <div className="h-64 bg-[#151515] rounded-2xl border border-white/7"/>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         {[...Array(3)].map((_, i) => <div key={i} className="h-52 bg-[#151515] rounded-2xl border border-white/7"/>)}
       </div>
     </div>
